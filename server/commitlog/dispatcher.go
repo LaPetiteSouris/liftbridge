@@ -3,12 +3,10 @@ package commitlog
 import (
 	"github.com/pkg/errors"
 
-	"github.com/liftbridge-io/liftbridge/server/logger"
 	"github.com/liftbridge-io/liftbridge/server/remotestorage"
 )
 
 type dispatcherOptions struct {
-	Logger  logger.Logger
 	storage string
 }
 
