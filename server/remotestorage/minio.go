@@ -1,6 +1,7 @@
 package remotestorage
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/minio/minio-go/v6"
@@ -8,19 +9,28 @@ import (
 
 // MinIODispatcherAdapter is the adapter for dispatching logs to MinIO
 type MinIODispatcherAdapter struct {
-	client *minio.Client
+	endpoint        string
+	accessKeyID     string
+	secretAccessKey string
+	useSSL          bool
+	bucket          string
+	location        string
+	client          *minio.Client
 	LogDispatcher
 }
 
 // New generate new MinIO client
-func (m *MinIODispatcherAdapter) New() error {
-	endpoint := "play.min.io"
-	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
-	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-	useSSL := true
+func (m *MinIODispatcherAdapter) New(endpoint string, accessKeyID string,
+	secretAccessKey string, bucket string, location string, useSSL bool) error {
+	m.endpoint = endpoint
+	m.accessKeyID = accessKeyID
+	m.secretAccessKey = secretAccessKey
+	m.useSSL = useSSL
+	m.bucket = bucket
+	m.location = location
 
 	// Initialize minio client object.
-	minioClient, err := minio.New(endpoint, accessKeyID, secretAccessKey, useSSL)
+	minioClient, err := minio.New(m.endpoint, m.accessKeyID, m.secretAccessKey, m.useSSL)
 	if err != nil {
 		return err
 	}
@@ -31,13 +41,11 @@ func (m *MinIODispatcherAdapter) New() error {
 
 // MakeBucket try to create the bucket
 func (m *MinIODispatcherAdapter) MakeBucket() error {
-	bucketName := "mymusic"
-	location := "us-east-1"
 
-	err := m.client.MakeBucket(bucketName, location)
+	err := m.client.MakeBucket(m.bucket, m.location)
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if you run this twice)
-		exists, errBucketExists := m.client.BucketExists(bucketName)
+		exists, errBucketExists := m.client.BucketExists(m.bucket)
 		if errBucketExists == nil && exists {
 			return nil
 		}
@@ -47,12 +55,11 @@ func (m *MinIODispatcherAdapter) MakeBucket() error {
 }
 
 // Dispatch implements LogDispatcher.Dispatch method for MinIO
-func (m *MinIODispatcherAdapter) Dispatch(data io.Reader) error {
-	dataStat, err := data.Stat()
-	if err != nil {
-		return err
-	}
-	err = m.client.PutObject("mybucket", "myobect", data, dataStat.Size(), minio.PutObjectOptions{ContentType: "application/octet-stream"})
+func (m *MinIODispatcherAdapter) Dispatch(data io.Reader, id string) error {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(data)
+	size := buf.Len()
+	_, err := m.client.PutObject(m.bucket, id, data, int64(size), minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		return err
 	}

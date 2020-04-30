@@ -236,6 +236,22 @@ func TestCleaner(t *testing.T) {
 	}
 }
 
+// TestArchiver test if segments are dispached to tierced storage
+func TestArchiver(t *testing.T) {
+	l, cleanup := setup(t)
+	defer l.Close()
+	defer cleanup()
+
+	_, err := l.Append(msgs)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(l.Segments()))
+
+	_, err = l.Append(msgs)
+	require.NoError(t, err)
+
+	require.NoError(t, l.Archive())
+}
+
 // Ensure Clean deletes leader epoch offsets from the cache when segments are
 // deleted but compaction is not run.
 func TestCleanerDeleteLeaderEpochOffsets(t *testing.T) {

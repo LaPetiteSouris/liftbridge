@@ -625,6 +625,32 @@ func (l *commitLog) cleanerLoop() {
 	}
 }
 
+// Archive dispatches logs that are invalid after retention policy expires
+// and dispatch it to tierced storage
+func (l *commitLog) Archive() error {
+	l.mu.RLock()
+	oldSegments := l.segments
+	l.mu.RUnlock()
+	opts := dispatcherOptions{"minio"}
+	dispatcher, err := newDispatcher(opts)
+
+	if err != nil {
+		return err
+	}
+	for _, s := range oldSegments {
+		if s.log == nil || s.Index.file == nil {
+			return errors.New("nil")
+		}
+		err = dispatcher.Dispatch(s.log, s.log.Name())
+		err = dispatcher.Dispatch(s.Index.file, s.Index.path)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+
+}
+
 // Clean applies retention and compaction rules against the log, if applicable.
 func (l *commitLog) Clean() error {
 	l.mu.RLock()

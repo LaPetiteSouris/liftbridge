@@ -20,6 +20,7 @@ require (
 	github.com/liftbridge-io/liftbridge-api v1.0.0-beta.0.20200423230528-d9f61faac39e
 	github.com/liftbridge-io/nats-on-a-log v0.0.0-20200303015016-68120bc11e03
 	github.com/liftbridge-io/raft-boltdb v0.0.0-20200414234651-aaf6e08d8f73
+	github.com/minio/minio v0.0.0-20200430053134-c7470e6e6eed
 	github.com/minio/minio-go/v6 v6.0.55
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/natefinch/atomic v0.0.0-20150920032501-a62ce929ffcc
