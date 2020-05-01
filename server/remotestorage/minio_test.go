@@ -1,11 +1,22 @@
 package remotestorage
 
 import (
+	"io/ioutil"
+	"log"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func createTempFile() string {
+	file, err := ioutil.TempFile(os.TempDir(), "miniotest")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return file.Name()
+}
 
 // TestInitMinioClient is to ensure MinIO initialization
 func TestInitMinioClient(t *testing.T) {
@@ -30,7 +41,9 @@ func TestDispatch(t *testing.T) {
 	require.Nil(t, err)
 	err = minIOAdapter.MakeBucket()
 	require.Nil(t, err)
-	log, err := os.OpenFile("/tmp/log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	err = minIOAdapter.Dispatch(log, "id")
+	tmpFile := createTempFile()
+	fileID := strings.Trim(tmpFile, "/")
+	defer os.Remove(tmpFile)
+	err = minIOAdapter.Dispatch(tmpFile, fileID)
 	require.Nil(t, err)
 }

@@ -1,9 +1,6 @@
 package remotestorage
 
 import (
-	"bytes"
-	"io"
-
 	"github.com/minio/minio-go/v6"
 )
 
@@ -55,14 +52,12 @@ func (m *MinIODispatcherAdapter) MakeBucket() error {
 }
 
 // Dispatch implements LogDispatcher.Dispatch method for MinIO
-func (m *MinIODispatcherAdapter) Dispatch(data io.Reader, id string) error {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(data)
-	size := buf.Len()
-	_, err := m.client.PutObject(m.bucket, id, data, int64(size), minio.PutObjectOptions{ContentType: "application/octet-stream"})
+func (m *MinIODispatcherAdapter) Dispatch(path string, id string) error {
+	// Make bucket in case does not exist
+	m.MakeBucket()
+	_, err := m.client.FPutObject(m.bucket, id, path, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		return err
 	}
 	return nil
-	//
 }

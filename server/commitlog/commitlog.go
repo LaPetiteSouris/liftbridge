@@ -630,19 +630,9 @@ func (l *commitLog) cleanerLoop() {
 func (l *commitLog) Archive() error {
 	l.mu.RLock()
 	oldSegments := l.segments
-	l.mu.RUnlock()
-	opts := dispatcherOptions{"minio"}
-	dispatcher, err := newDispatcher(opts)
-
-	if err != nil {
-		return err
-	}
+	defer l.mu.RUnlock()
 	for _, s := range oldSegments {
-		if s.log == nil || s.Index.file == nil {
-			return errors.New("nil")
-		}
-		err = dispatcher.Dispatch(s.log, s.log.Name())
-		err = dispatcher.Dispatch(s.Index.file, s.Index.path)
+		err := s.Dispatch()
 		if err != nil {
 			return err
 		}

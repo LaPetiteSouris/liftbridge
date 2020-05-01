@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -458,4 +459,25 @@ func (s *segment) logPath() string {
 
 func (s *segment) indexPath() string {
 	return filepath.Join(s.path, fmt.Sprintf(fileFormat, s.BaseOffset, indexSuffix+s.suffix))
+}
+
+// Dispatch sends the log and index of the segment to tierced storage
+func (s *segment) Dispatch() error {
+	s.RLock()
+	defer s.RUnlock()
+
+	opts := dispatcherOptions{"minio"}
+	dispatcher, err := newDispatcher(opts)
+
+	logFileName := strings.Trim(s.log.Name(), "/")
+	indexFileName := strings.Trim(s.Index.path, "/")
+	err = dispatcher.Dispatch(s.log.Name(), logFileName)
+	// Sync index
+	s.Index.mu.RLock()
+	defer s.Index.mu.RUnlock()
+	err = dispatcher.Dispatch(s.Index.path, indexFileName)
+	if err != nil {
+		return err
+	}
+	return nil
 }
