@@ -14,7 +14,7 @@ type dispatcherOptions struct {
 // policies by deleting segments.
 func newDispatcher(opts dispatcherOptions) (remotestorage.LogDispatcher, error) {
 	if opts.storage == "minio" {
-		adapter := &remotestorage.MinIODispatcherAdapter{}
+		adapter := &remotestorage.MinIOAdapter{}
 		err := adapter.New("127.0.0.1:9000", "minioadmin", "minioadmin", "test", "", false)
 		if err != nil {
 			return nil, err

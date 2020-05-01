@@ -20,14 +20,14 @@ func createTempFile() string {
 
 // TestInitMinioClient is to ensure MinIO initialization
 func TestInitMinioClient(t *testing.T) {
-	minIOAdapter := MinIODispatcherAdapter{}
+	minIOAdapter := MinIOAdapter{}
 	err := minIOAdapter.New("127.0.0.1:9000", "minioadmin", "minioadmin", "test", "", false)
 	require.Nil(t, err)
 }
 
 // TestMakeBucket is to ensure MinIO initialization
 func TestMakeBucket(t *testing.T) {
-	minIOAdapter := MinIODispatcherAdapter{}
+	minIOAdapter := MinIOAdapter{}
 	err := minIOAdapter.New("127.0.0.1:9000", "minioadmin", "minioadmin", "test", "", false)
 	require.Nil(t, err)
 	err = minIOAdapter.MakeBucket()
@@ -36,7 +36,7 @@ func TestMakeBucket(t *testing.T) {
 
 // TestMakeBucket is to ensure MinIO initialization
 func TestDispatch(t *testing.T) {
-	minIOAdapter := MinIODispatcherAdapter{}
+	minIOAdapter := MinIOAdapter{}
 	err := minIOAdapter.New("127.0.0.1:9000", "minioadmin", "minioadmin", "test", "", false)
 	require.Nil(t, err)
 	err = minIOAdapter.MakeBucket()

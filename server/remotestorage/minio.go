@@ -1,11 +1,13 @@
 package remotestorage
 
 import (
+	"os"
+
 	"github.com/minio/minio-go/v6"
 )
 
-// MinIODispatcherAdapter is the adapter for dispatching logs to MinIO
-type MinIODispatcherAdapter struct {
+// MinIOAdapter is the adapter for dispatching logs to MinIO
+type MinIOAdapter struct {
 	endpoint        string
 	accessKeyID     string
 	secretAccessKey string
@@ -17,7 +19,7 @@ type MinIODispatcherAdapter struct {
 }
 
 // New generate new MinIO client
-func (m *MinIODispatcherAdapter) New(endpoint string, accessKeyID string,
+func (m *MinIOAdapter) New(endpoint string, accessKeyID string,
 	secretAccessKey string, bucket string, location string, useSSL bool) error {
 	m.endpoint = endpoint
 	m.accessKeyID = accessKeyID
@@ -37,7 +39,7 @@ func (m *MinIODispatcherAdapter) New(endpoint string, accessKeyID string,
 }
 
 // MakeBucket try to create the bucket
-func (m *MinIODispatcherAdapter) MakeBucket() error {
+func (m *MinIOAdapter) MakeBucket() error {
 
 	err := m.client.MakeBucket(m.bucket, m.location)
 	if err != nil {
@@ -52,7 +54,7 @@ func (m *MinIODispatcherAdapter) MakeBucket() error {
 }
 
 // Dispatch implements LogDispatcher.Dispatch method for MinIO
-func (m *MinIODispatcherAdapter) Dispatch(path string, id string) error {
+func (m *MinIOAdapter) Dispatch(path string, id string) error {
 	// Make bucket in case does not exist
 	m.MakeBucket()
 	_, err := m.client.FPutObject(m.bucket, id, path, minio.PutObjectOptions{ContentType: "application/octet-stream"})
@@ -60,4 +62,11 @@ func (m *MinIODispatcherAdapter) Dispatch(path string, id string) error {
 		return err
 	}
 	return nil
+}
+
+// Retrieve implements LogRetriever.Retrieve method for MinIO
+// given an offset, it should return the log and index file
+// stored in remote storage
+func (m *MinIOAdapter) Retrieve(path string, offset int64) (*os.File, *os.File, error) {
+	return nil, nil, nil
 }
